@@ -34,7 +34,7 @@ defmodule Replica do
       exit(:normal)
     end
 
-    
+
     next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
 
 
