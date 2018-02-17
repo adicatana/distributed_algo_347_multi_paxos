@@ -1,3 +1,4 @@
+# Panayiotis Panayiotou (pp3414) and Adrian Catana (ac7815)
 
 # distributed algorithms, n.dulay, 2 feb 18
 # multi-paxos, configuration parameters v1
@@ -5,8 +6,8 @@
 defmodule Configuration do
 
 def version 1 do	# configuration 1
-  %{ 
-  debug_level:  0, 	# debug level 
+  %{
+  debug_level:  0, 	# debug level
   docker_delay: 5_000,	# time (ms) to wait for containers to start up
 
   max_requests: 500,   	# max requests each client will make
@@ -17,7 +18,7 @@ def version 1 do	# configuration 1
 
   print_after:  1_000	# print transaction log summary every print_after msecs
 
-  # add your own here
+  window_size: 10 # For replicas: Max amount of more commands that are proposed than decided by the Synod protocol
   }
 end
 
@@ -30,4 +31,3 @@ def version 3 do	# configuration 3
 end
 
 end # module -----------------------
-
