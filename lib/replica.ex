@@ -15,19 +15,37 @@ defmodule Replica do
         requests = :queue.in(c, requests)
 
       {:decision, s, c} -> 
-      # decision made by the Synod protocol, command c for slot s
+        # Decision made by the Synod protocol, command c for slot s
         decisions = MapSet.put(decisions, {s, c})
 
-        # For all the decisions that are ready for execution
-        for {^slot_out, command} <- decisions do
-          perform(command)
-        end
+        {state, slot_in, slot_out, requests, proposals, decisions, leaders, window} = while state, slot_in, slot_out, requests, proposals, decisions, leaders, window
+
     end
-    propose state, slot_in, slot_out, requests, proposals, decisions, leaders, window
+    {state, slot_in, slot_out, requests, proposals, decisions, leaders, window} = propose state, slot_in, slot_out, requests, proposals, decisions, leaders, window
+
+    next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
   end
 
-  def isreconfig op do
-    match?({_, _, {:reconfig, _}} ,op)
+  defp while state, slot_in, slot_out, requests, proposals, decisions, leaders, window do
+    my_list = for {^slot_out, c_prime} <- decisions, do: c_prime
+
+    fst = List.first(my_list)
+
+    if fst != nil do
+      my_list_2 = for {^slot_out, c_double} <- proposals, do: c_double
+      fst_2 = List.first(my_list_2)
+      if fst_2 != nil do
+        proposals = MapSet.delete(proposals, {slot_out, fst_2})
+        if fst != fst_2 do
+          requests = requests ++ [fst_2]
+        end
+      end
+
+      {state, slot_in, slot_out, requests, proposals, decisions, leaders, window} = perform fst, state, slot_in, slot_out, requests, proposals, decisions, leaders, window
+      {state, slot_in, slot_out, requests, proposals, decisions, leaders, window} = while state, slot_in, slot_out, requests, proposals, decisions, leaders, window
+    end
+
+    {state, slot_in, slot_out, requests, proposals, decisions, leaders, window}
   end
 
   def propose state, slot_in, slot_out, requests, proposals, decisions, leaders, window do
@@ -43,31 +61,16 @@ defmodule Replica do
       propose state, slot_in, slot_out, requests, proposals, decisions, leaders, window
     end
 
+    {state, slot_in, slot_out, requests, proposals, decisions, leaders, window}
 
-#    for c <- decisions, slot_in < slot_out + window do
-#      slot_id = slot_in - window
-#      for {^slot_id, {_, _, op}} <- decisions, isreconfig(op) do
-#        leaders = op.leaders
-#      end
-
-#      if !Enum.find(decisions, fn d -> match?({^slot_in, _}, d) end) do
-#        requests = MapSet.difference(requests, MapSet.put(Mapset.new, c))
-#        proposals = MapSet.union(proposals, {slot_in, c})
-#        for l <- leaders, do:
-#            send l, {:propose, slot_in, c}
-#      end
-#      slot_in = slot_in + 1
-#    end
-
-#    next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
   end
 
   def perform {client, cid, op}, state, slot_in, slot_out, requests, proposals, decisions, leaders, window do
 
     flag = 0
 
-    for {s, {client_mock, cid_mock, op_mock}} <- decisions do 
-      if s < slot_out and client_mock == client and cid_mock == cid and op_mock == op do
+    for {s, {^client, ^cid, ^op}} <- decisions do 
+      if s < slot_out do
         flag = 1
       end
     end
@@ -76,28 +79,20 @@ defmodule Replica do
       slot_out = slot_out + 1
     else
       {next, result} = op state
-      state = next
+
+      # TODO: send to DATABASE send {op blah blah}
+
       slot_out = slot_out + 1
       send client, {:reply, cid, result}
     end
 
+    {state, slot_in, slot_out, requests, proposals, decisions, leaders, window}
+
   end
 
-#    for {} do
+  def isreconfig op do
+    match?({_, _, {:reconfig, _}} ,op)
+  end
 
-      # mmmm
-#      next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
-#      exit(:normal)
-#    end
-
-
-#    next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
-
-
-#    if  or isreconfig(op) do
-
-#    end
-#    next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
-#  end
 
 end
