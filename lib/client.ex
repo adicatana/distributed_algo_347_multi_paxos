@@ -43,13 +43,12 @@ defp next config, client_num, replicas, sent do
   end
 end # next
 
-"""
+
 defp handle_reply do  # this discards all replies received
   receive do
   { :reply, _cid, _result } -> handle_reply()
   after 0 -> true
   end # receive
 end # handle_reply
-"""
 
 end # Client

@@ -64,21 +64,40 @@ defmodule Replica do
 
   def perform {client, cid, op}, state, slot_in, slot_out, requests, proposals, decisions, leaders, window do
 
-    for {} do
+    flag = 0
+
+    for {s, {client_mock, cid_mock, op_mock}} <- decisions do 
+      if s < slot_out and client_mock == client and cid_mock == cid and op_mock == op do
+        flag = 1
+      end
+    end
+
+    if flag == 1 do
+      slot_out = slot_out + 1
+    else
+      {next, result} = op state
+      state = next
+      slot_out = slot_out + 1
+      send client, {:reply, cid, result}
+    end
+
+  end
+
+#    for {} do
 
       # mmmm
-      next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
-      exit(:normal)
-    end
+#      next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
+#      exit(:normal)
+#    end
 
 
-    next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
+#    next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
 
 
-    if  or isreconfig(op) do
+#    if  or isreconfig(op) do
 
-    end
-    next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
-  end
+#    end
+#    next state, slot_in, slot_out, requests, proposals, decisions, leaders, window
+#  end
 
 end
