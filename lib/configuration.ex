@@ -16,7 +16,7 @@ def version 1 do	# configuration 1
   n_accounts:   100,	# number of active bank accounts
   max_amount:   1000,	# max amount moved between accounts
 
-  print_after:  1_000	# print transaction log summary every print_after msecs
+  print_after:  1_000,	# print transaction log summary every print_after msecs
 
   window_size: 10 # For replicas: Max amount of more commands that are proposed than decided by the Synod protocol
   }

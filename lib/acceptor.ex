@@ -3,7 +3,7 @@ defmodule Acceptor do
 
   def start config do
     # define falsity ballot number as (-1, -1)
-    next (-1, -1), MapSet.new
+    next {-1, -1}, MapSet.new
   end
 
   # Acceptor runs in an infinite loop, receiving two 
