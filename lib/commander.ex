@@ -1,12 +1,22 @@
 # Panayiotis Panayiotou (pp3414) and Adrian Catana (ac7815)
 defmodule Commander do
 
-  def next leader, acceptors, replicas, {b, s, c}, waitfor do
+  # Commander sends a ⟨p2a,leader,⟨b,s,c⟩⟩ message to all 
+  # acceptors, and waits for responses of the form 
+  # ⟨p2b,acceptor,ballot_num⟩.
+  # In each such response ballot_num >= b will hold.  
+  def start leader, acceptors, replicas, {b, s, c} do
+    for a <- acceptors, do: 
+      send a, {:p2a, self(), {b, s, c}}
+    next leader, acceptors, replicas, {b, s, c}, acceptors
+  end
+
+  defp next leader, acceptors, replicas, {b, s, c}, waitfor do
     receive do
-      {:p2a, a, ballot_num} ->
+      {:p2b, a, ballot_num} ->
         if ballot_num == b do
-          waitfor = MapSet.delete(waitfor, a)
-          if MapSet.size(waitfor) * 2 < MapSet.size(acceptors) do
+          waitfor = MapSet.delete waitfor, a
+          if 2 * MapSet.size(waitfor) < MapSet.size(acceptors) do
             for r <- replicas, do:
               send r, {:decision, s, c}
             exit(:normal)
@@ -19,8 +29,4 @@ defmodule Commander do
     end
   end
 
-  def start leader, acceptors, replicas, {b, s, c} do
-    for a <- acceptors, do: send a, {:p2a, self(), {b, s, c}}
-    next leader, acceptors, replicas, {b, s, c}, acceptors
-  end
 end
