@@ -8,7 +8,7 @@ defmodule Acceptor do
 
   # Acceptor runs in an infinite loop, receiving two 
   # kinds of request messages from leaders
-  def next ballot_num, accepted do
+  defp next ballot_num, accepted do
     receive do
       # ⟨p1a,l,b⟩: receive a phase 1a request message 
       # from a leader with identifier l, for a ballot number b, 
