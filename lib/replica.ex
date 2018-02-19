@@ -81,12 +81,9 @@ defmodule Replica do
     if flag == true do
       slot_out = slot_out + 1
     else
-      # {next, result} = op state
-
-      # TODO: send to DATABASE send {op blah blah}
       send state, {:execute, op}
       slot_out = slot_out + 1
-      send client, {:reply, cid, :bla}
+      send client, {:reply, cid, :result}
     end
 
     {state, slot_in, slot_out, requests, proposals, decisions, leaders, config}
