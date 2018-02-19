@@ -2,7 +2,7 @@
 defmodule Acceptor do
 
   def start config do
-    # define falsity ballot number as (-1, -1)
+    # Define falsity ballot number as {-1, -1}
     next {-1, -1}, MapSet.new
   end
 
@@ -10,15 +10,7 @@ defmodule Acceptor do
   # kinds of request messages from leaders
   defp next ballot_num, accepted do
     receive do
-      # ⟨p1a,l,b⟩: receive a phase 1a request message 
-      # from a leader with identifier l, for a ballot number b, 
-      # an acceptor makes the following transition.  
-      # Acceptor adopts b iff it exceeds its current
-      # ballot number. Then it returns to l a phase1b response 
-      # message containing its current ballot number and all 
-      # pvalues accepted thus far by the acceptor.
       {:p1a, l, b} ->
-
         ballot_num = 
           if b > ballot_num do
             b
@@ -26,13 +18,8 @@ defmodule Acceptor do
             ballot_num
           end
         send l, {:p1b, self(), ballot_num, accepted}
+        next ballot_num, accepted
 
-      # ⟨p2a,l,⟨b,s,c⟩⟩: receive a phase 2a request 
-      # message from leader l with pvalue ⟨b,s,c⟩, 
-      # If the current ballot number equals b, then 
-      # the acceptor accepts ⟨b,s,c⟩. Acceptor 
-      # returns to l a phase 2b response message 
-      # containing its current ballot number.        
       {:p2a, l, {b, s, c}} ->
         accepted = 
           if ballot_num == b do
@@ -41,7 +28,7 @@ defmodule Acceptor do
             accepted
           end
         send l, {:p2b, self(), ballot_num}
+        next ballot_num, accepted
     end
-    next ballot_num, accepted
   end
 end

@@ -27,7 +27,5 @@ defmodule Commander do
           exit(:normal)
         end
     end
-
   end
-
 end

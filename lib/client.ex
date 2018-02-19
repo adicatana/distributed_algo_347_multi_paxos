@@ -29,7 +29,7 @@ defp next config, client_num, replicas, sent do
     sent = sent + 1
     cmd = { self(), sent, transaction }
 
-#    round robin which replicas to sent requests to
+    # round robin which replicas to sent requests to
     replica = Enum.at replicas, rem(sent, length(replicas))
     # broadcasting?
 #    for replica <- replicas do
@@ -38,7 +38,7 @@ defp next config, client_num, replicas, sent do
 
     if sent == config.max_requests, do: send self(), :client_stop
 
-    handle_reply #-- uncomment if replies are implemented
+    handle_reply() #-- uncomment if replies are implemented
     next config, client_num, replicas, sent
   end
 end # next
@@ -46,7 +46,7 @@ end # next
 
 defp handle_reply do  # this discards all replies received
   receive do
-  { :reply, _cid, _result } -> handle_reply
+  { :reply, _cid, _result } -> handle_reply()
   after 0 -> true
   end # receive
 end # handle_reply

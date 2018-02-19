@@ -30,12 +30,13 @@ defmodule Leader do
         next acceptors, replicas, ballot_num, active, proposals
 
       {:preempted, {r, leader}} ->
+        #IO.puts "PING PONG #{inspect ballot_num}"
         if {r, leader} > ballot_num do
           active = false
           ballot_num = {r + 1, self()}
           spawn Scout, :start, [self(), acceptors, ballot_num]
-          next acceptors, replicas, ballot_num, active, proposals
         end
+        next acceptors, replicas, ballot_num, active, proposals
     end
   end
 
