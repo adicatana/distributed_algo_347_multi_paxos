@@ -18,9 +18,13 @@ defmodule Acceptor do
       # message containing its current ballot number and all 
       # pvalues accepted thus far by the acceptor.
       {:p1a, l, b} ->
-        if b > ballot_num do
-          ballot_num = b
-        end
+
+        ballot_num = 
+          if b > ballot_num do
+            b
+          else
+            ballot_num
+          end
         send l, {:p1b, self(), ballot_num, accepted}
 
       # ⟨p2a,l,⟨b,s,c⟩⟩: receive a phase 2a request 
@@ -30,9 +34,12 @@ defmodule Acceptor do
       # returns to l a phase 2b response message 
       # containing its current ballot number.        
       {:p2a, l, {b, s, c}} ->
-        if ballot_num == b do
-          accepted = MapSet.put(accepted, {b, s, c})
-        end
+        accepted = 
+          if ballot_num == b do
+            MapSet.put(accepted, {b, s, c})
+          else
+            accepted
+          end
         send l, {:p2b, self(), ballot_num}
     end
     next ballot_num, accepted

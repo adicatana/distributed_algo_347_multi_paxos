@@ -12,7 +12,6 @@ end # start
 defp next config, monitor, db_seqnum, balances do
   receive do
   { :execute, transaction } ->
-    IO.puts "Here"
     { :move, amount, account1, account2 } = transaction
 
     balance1 = Map.get balances, account1, 0

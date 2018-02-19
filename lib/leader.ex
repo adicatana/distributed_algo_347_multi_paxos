@@ -31,6 +31,8 @@ defmodule Leader do
           ballot_num = {r + 1, self()}
           spawn Scout, :start, [self(), acceptors, ballot_num]
         end
+    after
+      5000 -> IO.puts "muie"
     end
 
     next acceptors, replicas, ballot_num, active, proposals
@@ -71,6 +73,5 @@ defmodule Leader do
 
     proposals
   end
-
 
 end
