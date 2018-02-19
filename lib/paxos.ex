@@ -26,6 +26,8 @@ defp start config do
 
   { replicas, acceptors, leaders } = DAC.unzip3 server_components
 
+  IO.inspect acceptors
+
   for replica <- replicas, do: send replica, { :bind, leaders }
   for leader  <- leaders,  do: send leader,  { :bind, acceptors, replicas }
 

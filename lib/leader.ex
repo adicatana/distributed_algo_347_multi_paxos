@@ -38,10 +38,10 @@ defmodule Leader do
 
   defp update(x, y) do 
     res = MapSet.new
-    res.put(y)
+    res = MapSet.union(res, y)
     for {s, elem} <- x do
       if !Enum.find(y, fn p -> match?({^s, _}, p) end) do
-        res.put({s, elem})
+        MapSet.put(res, {s, elem})
       end
     end
     res

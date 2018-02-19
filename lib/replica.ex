@@ -52,7 +52,7 @@ defmodule Replica do
     if slot_in < slot_out + window and !:queue.is_empty(requests) do
       if !Enum.find(decisions, fn d -> match?({^slot_in, _}, d) end) do
         {{:value, c}, requests} = :queue.out(requests)
-        proposals = Mapset.unin(proposals, {slot_in, c})
+        proposals = MapSet.put(proposals, {slot_in, c})
         for l <- leaders do
           send l, {:propose, slot_in, c}
         end
@@ -78,12 +78,12 @@ defmodule Replica do
     if flag == 1 do
       slot_out = slot_out + 1
     else
-      {next, result} = op state
+      # {next, result} = op state
 
       # TODO: send to DATABASE send {op blah blah}
-
+      send state, {:execute, op}
       slot_out = slot_out + 1
-      send client, {:reply, cid, result}
+      send client, {:reply, cid, :bla}
     end
 
     {state, slot_in, slot_out, requests, proposals, decisions, leaders, window}
