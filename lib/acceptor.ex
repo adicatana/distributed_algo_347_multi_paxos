@@ -32,9 +32,8 @@ defmodule Acceptor do
       {:p2a, l, {b, s, c}} ->
         if ballot_num == b do
           accepted = MapSet.put(accepted, {b, s, c})
-        else
-          send l, {:p2b, self(), ballot_num}
         end
+        send l, {:p2b, self(), ballot_num}
     end
     next ballot_num, accepted
   end

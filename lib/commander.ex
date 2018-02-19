@@ -15,8 +15,8 @@ defmodule Commander do
     receive do
       {:p2b, a, ballot_num} ->
         if ballot_num == b do
-          waitfor = MapSet.delete waitfor, a
-          if 2 * MapSet.size(waitfor) < MapSet.size(acceptors) do
+          waitfor = List.delete waitfor, a
+          if 2 * length(waitfor) < length(acceptors) do
             for r <- replicas, do:
               send r, {:decision, s, c}
             exit(:normal)

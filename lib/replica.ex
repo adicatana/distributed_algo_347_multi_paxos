@@ -37,7 +37,7 @@ defmodule Replica do
       if fst_2 != nil do
         proposals = MapSet.delete(proposals, {slot_out, fst_2})
         if fst != fst_2 do
-          requests = requests ++ [fst_2]
+          requests = :queue.in(fst_2, requests)
         end
       end
 
@@ -65,17 +65,22 @@ defmodule Replica do
 
   end
 
+  defp rec decisions, client, cid, op, slot_out do
+    case decisions do
+      [{s, {^client, ^cid, ^op}} | t] ->
+        a = s < slot_out
+        IO.puts "We #{inspect a}"
+        s < slot_out or rec t, client, cid, op, slot_out
+      [_ | t] -> rec t, client, cid, op, slot_out 
+      [] -> false
+    end
+  end
+
   def perform {client, cid, op}, state, slot_in, slot_out, requests, proposals, decisions, leaders, window do
 
-    flag = 0
+    flag = rec(MapSet.to_list(decisions), client, cid, op, slot_out)
 
-    for {s, {^client, ^cid, ^op}} <- decisions do 
-      if s < slot_out do
-        flag = 1
-      end
-    end
-
-    if flag == 1 do
+    if flag == true do
       slot_out = slot_out + 1
     else
       # {next, result} = op state
