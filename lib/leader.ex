@@ -19,28 +19,30 @@ defmodule Leader do
             spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}]
           end
         end
+        next acceptors, replicas, ballot_num, active, proposals
+
       {:adopted, ^ballot_num, pvals} ->
         proposals = update(proposals, pmax(pvals))
         for {s, c} <- proposals do
           spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}]
         end
         active = true
+        next acceptors, replicas, ballot_num, active, proposals
+
       {:preempted, {r, leader}} ->
         if {r, leader} > ballot_num do
           active = false
           ballot_num = {r + 1, self()}
           spawn Scout, :start, [self(), acceptors, ballot_num]
+          next acceptors, replicas, ballot_num, active, proposals
+
         end
-    after
-      5000 -> IO.puts "muie"
     end
 
-    next acceptors, replicas, ballot_num, active, proposals
   end
 
   defp update(x, y) do 
-    res = MapSet.new
-    res = MapSet.union(res, y)
+    res = MapSet.new(y)
     for {s, elem} <- x do
       if !Enum.find(y, fn p -> match?({^s, _}, p) end) do
         MapSet.put(res, {s, elem})
@@ -50,28 +52,14 @@ defmodule Leader do
   end
 
   defp find_max_ballot(pvals) do 
-    b = {-1, -1}
-    for {ballot_num, _, _} <- pvals do
-      if ballot_num > b do
-        b = ballot_num
-      end
-    end    
-    b
+    List.foldl(MapSet.to_list(pvals), {-1, -1}, fn {ballot_num, _, _}, acc -> if acc > ballot_num do acc else ballot_num end end)
   end
 
   # determines fthe {slot, command} corresponding to the 
   # maximum ballot number in pvals
   defp pmax pvals do
     b = find_max_ballot pvals
-    # this is bad programming
-    proposals = MapSet.new 
-    for {ballot_num, s, c} <- pvals do
-      if b == ballot_num do
-        proposals.put({s, c})
-      end
-    end
-
-    proposals
+    MapSet.new(for {ballot_num, s, c} <- pvals, b == ballot_num, do: {s, c})
   end
 
 end
