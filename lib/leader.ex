@@ -46,6 +46,9 @@ defmodule Leader do
         if {r, leader} > ballot_num do
           active = false
           ballot_num = {r + 1, self()}
+          # Ping Pong if you spawn the scout immediately
+          # Thus, introduce a bit of asymmetry to resolve the livelock
+          Process.sleep(:rand.uniform(1000))
           spawn Scout, :start, [self(), acceptors, ballot_num]
         end
         monitoring_leader = leader
@@ -57,13 +60,13 @@ defmodule Leader do
     MapSet.new(for {b, s, c} <- pvals, Enum.all?(pvals, fn {b_prime, ^s, _} -> b_prime <= b end), do: {b, s, c})
   end
 
-  # The update function applies to two sets of proposals. 
-  # Returns the elements of y as well as the elements 
+  # The update function applies to two sets of proposals.
+  # Returns the elements of y as well as the elements
   # of x that are not in y.
   # Warning: this is not union! When talking about
   # elements of y, we refer to fst p, where p is a
-  # pair in y 
-  defp update(x, y) do 
+  # pair in y
+  defp update(x, y) do
     res = MapSet.new(for {s, elem} <- x, !Enum.find(y, fn p -> match?({^s, _}, p) end), do: {s, elem})
     MapSet.union(res, MapSet.new(y))
   end
