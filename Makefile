@@ -4,9 +4,9 @@
 # coursework 2, paxos made moderately complex
 # Makefile, v2
 
-SERVERS = 11
+SERVERS = 4
 CLIENTS = 2
-CONFIG  = 1
+CONFIG  = 5
 
 # ----------------------------------------------------------------------
 

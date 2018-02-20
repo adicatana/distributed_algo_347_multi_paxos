@@ -39,7 +39,7 @@ end
 
 def version 5 do
   config = version 1
-  Map.put config, :leader_failures, 5 # Use 6 (f + 1) servers to tolerate
+  Map.put config, :leader_failures, 2 # Use 6 (f + 1) servers to tolerate
 end
 
 def version 6 do # pushing the failure tolerance testing to the boundary
