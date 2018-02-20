@@ -2,12 +2,11 @@
 
 # distributed algorithms, n.dulay, 1 feb 18
 # coursework 2, paxos made moderately complex
-# Makefile, v2 
+# Makefile, v2
 
-SERVERS = 3
+SERVERS = 11
 CLIENTS = 2
-
-CONFIG  = 1
+CONFIG  = 4
 
 # ----------------------------------------------------------------------
 
@@ -18,12 +17,12 @@ SSH_SETUP    = ssh
 
 PROJECT     = da347
 NETWORK     = $(PROJECT)_network
- 
+
 # run all clients, servers and top-level component in a single node
-SINGLE	 = mix run --no-halt -e $(MAIN) $(CONFIG) $(SINGLE_SETUP) $(SERVERS) $(CLIENTS) 
+SINGLE	 = mix run --no-halt -e $(MAIN) $(CONFIG) $(SINGLE_SETUP) $(SERVERS) $(CLIENTS)
 
 # run each client, server and top-level component in its own Docker container
-GEN_YML	 = ./gen_yml.sh $(MAIN) $(CONFIG) $(DOCKER_SETUP) $(SERVERS) $(CLIENTS) 
+GEN_YML	 = ./gen_yml.sh $(MAIN) $(CONFIG) $(DOCKER_SETUP) $(SERVERS) $(CLIENTS)
 DOCKER   = docker-compose -p $(PROJECT)
 
 # run each client, server and top-level component on real hosts via ssh
@@ -42,9 +41,9 @@ run:
 gen:
 	$(GEN_YML)
 
-up:	
+up:
 	@make gen
-	$(DOCKER) up 
+	$(DOCKER) up
 
 down:
 	$(DOCKER) down
@@ -63,13 +62,13 @@ show:
 	@echo ----------------------
 	@make ps
 	@echo ----------------------
-	@make network 
+	@make network
 
 show2:
 	@echo ----------------------
 	@make ps2
 	@echo ----------------------
-	@make network 
+	@make network
 
 ps:
 	docker ps -a --format 'table {{.Names}}\t{{.Image}}'
@@ -84,11 +83,10 @@ inspect:
 	docker network inspect $(NETWORK)
 
 netrm:
-	docker network rm $(NETWORK) 
+	docker network rm $(NETWORK)
 conrm:
 	docker rm $(ID)
 
-kill:  
+kill:
 	docker rm -f `docker ps -a -q`
 	docker network rm $(NETWORK)
-

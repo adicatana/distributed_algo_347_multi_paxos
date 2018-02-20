@@ -25,6 +25,21 @@ defp start config do
   for replica <- replicas, do: send replica, { :bind, leaders }
   for leader  <- leaders,  do: send leader,  { :bind, acceptors, replicas }
 
+  # Faulty replicas
+  for {_, pid} <- Enum.zip(1 .. config.replica_failures, acceptors) do
+    :timer.kill_after(:timer.seconds(2), pid)
+  end
+
+  # Faulty leaders
+  for {_, pid} <- Enum.zip(1 .. config.leader_failures, acceptors) do
+    :timer.kill_after(:timer.seconds(2), pid)
+  end
+
+  # Faulty acceptors
+  for {_, pid} <- Enum.zip(1 .. config.acceptor_failures, acceptors) do
+    :timer.kill_after(:timer.seconds(2), pid)
+  end
+
   for c <- 1 .. config.n_clients do
     node_name = DAC.node_name config.setup, "client", c
     DAC.node_spawn node_name, Client, :start, [config, c, replicas]
