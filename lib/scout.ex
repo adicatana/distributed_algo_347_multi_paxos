@@ -4,7 +4,7 @@ defmodule Scout do
   def start leader, acceptors, b do
     for a <- acceptors, do:
       send a, {:p1a, self(), b}
-    next leader, acceptors, b, acceptors, MapSet.new
+    next leader, acceptors, b, MapSet.new(acceptors), MapSet.new
   end
 
   # A scout completes successfully when it has collected 
@@ -16,8 +16,8 @@ defmodule Scout do
       {:p1b, a, ballot_num, accepted_pvalues} ->
         if b == ballot_num do
           pvalues = MapSet.union(pvalues, accepted_pvalues)
-          waitfor = List.delete(waitfor, a)
-          if 2 * length(waitfor) < length(acceptors) do
+          waitfor = MapSet.delete(waitfor, a)
+          if 2 * MapSet.size(waitfor) < length(acceptors) do
             send leader, {:adopted, b, pvalues}
             exit(:normal)
           end

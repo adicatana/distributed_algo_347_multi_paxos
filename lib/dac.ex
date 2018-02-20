@@ -1,8 +1,4 @@
 # Panayiotis Panayiotou (pp3414) and Adrian Catana (ac7815)
-
-# distributed algorithms, n.dulay, 25 jan 18
-# helper functions v2
-
 defmodule DAC do
 
 # ---------------------

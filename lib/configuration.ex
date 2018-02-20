@@ -1,8 +1,4 @@
 # Panayiotis Panayiotou (pp3414) and Adrian Catana (ac7815)
-
-# distributed algorithms, n.dulay, 2 feb 18
-# multi-paxos, configuration parameters v1
-
 defmodule Configuration do
 
 def version 1 do	# configuration 1
@@ -18,7 +14,7 @@ def version 1 do	# configuration 1
 
   print_after:  1_000,	# print transaction log summary every print_after msecs
 
-  window_size: 10 # For replicas: Max amount of more commands that are proposed than decided by the Synod protocol
+  window_size: 100 # For replicas: Max amount of more commands that are proposed than decided by the Synod protocol
   }
 end
 

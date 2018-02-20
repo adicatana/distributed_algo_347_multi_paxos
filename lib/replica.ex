@@ -1,5 +1,4 @@
 # Panayiotis Panayiotou (pp3414) and Adrian Catana (ac7815)
-
 defmodule Replica do
 
   def start config, database, monitor do
@@ -17,11 +16,9 @@ defmodule Replica do
       {:decision, s, c} -> 
         # Decision made by th e Synod protocol, command c for slot s
         decisions = MapSet.put(decisions, {s, c})
-
         {slot_out, requests, proposals} = while state, slot_in, slot_out, requests, proposals, decisions, leaders, config
     end
     {slot_in, requests, proposals} = propose state, slot_in, slot_out, requests, proposals, decisions, leaders, config
-
     next state, slot_in, slot_out, requests, proposals, decisions, leaders, config, monitor
   end
 

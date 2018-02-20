@@ -8,15 +8,15 @@ defmodule Commander do
   def start leader, acceptors, replicas, {b, s, c} do
     for a <- acceptors, do: 
       send a, {:p2a, self(), {b, s, c}}
-    next leader, acceptors, replicas, {b, s, c}, acceptors
+    next leader, acceptors, replicas, {b, s, c}, MapSet.new(acceptors)
   end
 
   defp next leader, acceptors, replicas, {b, s, c}, waitfor do
     receive do
       {:p2b, a, ballot_num} ->
         if ballot_num == b do
-          waitfor = List.delete waitfor, a
-          if 2 * length(waitfor) < length(acceptors) do
+          waitfor = MapSet.delete waitfor, a
+          if 2 * MapSet.size(waitfor) < length(acceptors) do
             for r <- replicas, do:
               send r, {:decision, s, c}
             exit(:normal)
