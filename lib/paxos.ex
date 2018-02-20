@@ -26,18 +26,24 @@ defp start config do
   for leader  <- leaders,  do: send leader,  { :bind, acceptors, replicas }
 
   # Faulty replicas
-  for {_, pid} <- Enum.zip(1 .. config.replica_failures, acceptors) do
-    :timer.kill_after(:timer.seconds(2), pid)
+  if config.replica_failures > 0 do
+    for {_, pid} <- Enum.zip(1 .. config.replica_failures, replicas) do
+      :timer.kill_after(:timer.seconds(2), pid)
+    end
   end
 
   # Faulty leaders
-  for {_, pid} <- Enum.zip(1 .. config.leader_failures, acceptors) do
-    :timer.kill_after(:timer.seconds(2), pid)
+  if config.leader_failures > 0 do
+    for {_, pid} <- Enum.zip(1 .. config.leader_failures, leaders) do
+      :timer.kill_after(:timer.seconds(2), pid)
+    end
   end
 
   # Faulty acceptors
-  for {_, pid} <- Enum.zip(1 .. config.acceptor_failures, acceptors) do
-    :timer.kill_after(:timer.seconds(2), pid)
+  if config.acceptor_failures > 0 do
+    for {_, pid} <- Enum.zip(1 .. config.acceptor_failures, acceptors) do
+      :timer.kill_after(:timer.seconds(2), pid)
+    end     
   end
 
   for c <- 1 .. config.n_clients do
