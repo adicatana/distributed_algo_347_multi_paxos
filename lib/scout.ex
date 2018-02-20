@@ -18,10 +18,14 @@ defmodule Scout do
     receive do
       {:p1b, a, ballot_num, accepted_pvalues} ->
         if b == ballot_num do
-          pvalues = MapSet.union(pvalues, accepted_pvalues)
+          # Apply pmax at this point so we don't store redundant pvalues and 
+          # also not have to send over the network values that will be dropped
+          # by applying pmax at the leader
+          pvalues = pmax MapSet.union(pvalues, accepted_pvalues)
           waitfor = MapSet.delete(waitfor, a)
           if 2 * MapSet.size(waitfor) < length(acceptors) do
-            send leader, {:adopted, b, pvalues}
+            stripped_pvals = for {_, s, c} <- pvalues, do: {s, c}
+            send leader, {:adopted, b, stripped_pvals}
             exit(:normal)
           end
           next leader, acceptors, b, waitfor, pvalues
@@ -30,6 +34,17 @@ defmodule Scout do
           exit(:normal)
         end
     end
+  end
+
+  defp find_max_ballot(pvals) do 
+    List.foldl(MapSet.to_list(pvals), {-1, -1}, fn {ballot_num, _, _}, acc -> if acc > ballot_num do acc else ballot_num end end)
+  end
+
+  # Determines fthe {slot, command} corresponding 
+  # to the maximum ballot number in pvals
+  defp pmax pvals do
+    b = find_max_ballot pvals
+    MapSet.new(for {ballot_num, s, c} <- pvals, b == ballot_num, do: {ballot_num, s, c})
   end
 
 end

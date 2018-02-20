@@ -23,7 +23,7 @@ defmodule Leader do
         next acceptors, replicas, ballot_num, active, proposals, config
 
       {:adopted, ^ballot_num, pvals} ->
-        proposals = update(proposals, pmax(pvals))
+        proposals = update(proposals, pvals)
         for {s, c} <- proposals do
           spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}]
         end
@@ -52,17 +52,6 @@ defmodule Leader do
   defp update(x, y) do 
     res = MapSet.new(for {s, elem} <- x, !Enum.find(y, fn p -> match?({^s, _}, p) end), do: {s, elem})
     MapSet.union(res, MapSet.new(y))
-  end
-
-  defp find_max_ballot(pvals) do 
-    List.foldl(MapSet.to_list(pvals), {-1, -1}, fn {ballot_num, _, _}, acc -> if acc > ballot_num do acc else ballot_num end end)
-  end
-
-  # Determines fthe {slot, command} corresponding 
-  # to the maximum ballot number in pvals
-  defp pmax pvals do
-    b = find_max_ballot pvals
-    MapSet.new(for {ballot_num, s, c} <- pvals, b == ballot_num, do: {s, c})
   end
 
 end
