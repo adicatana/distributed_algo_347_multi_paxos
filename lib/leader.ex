@@ -54,7 +54,7 @@ defmodule Leader do
   end
 
   defp pmax pvals do
-    MapSet.new(for {b, s, c} <- pvals, Enum.all?(pvals, fn {b_prime, _, _} -> b_prime <= b end), do: {b, s, c})
+    MapSet.new(for {b, s, c} <- pvals, Enum.all?(pvals, fn {b_prime, ^s, _} -> b_prime <= b end), do: {b, s, c})
   end
 
   # The update function applies to two sets of proposals. 
