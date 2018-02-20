@@ -44,7 +44,7 @@ defmodule Replica do
       # Perform function integrated here for an easier
       # handling of the state
       {client, cid, op} = command_1
-      if !check_for_decision(MapSet.to_list(decisions), client, cid, op, slot_out) do
+      if !check_for_decision(MapSet.to_list(decisions), client, cid, op, slot_out) and !isreconfig op do
         send state, {:execute, op}      
         send client, {:reply, cid, :result}
       end
@@ -58,8 +58,12 @@ defmodule Replica do
   # In order to maintain the state (mutate it), we simply
   # return the modified state to the main loop.
   defp propose state, slot_in, slot_out, requests, proposals, decisions, leaders, config do
+
     # For a greater window size, we get to propose more commands for a slot
     if slot_in < slot_out + config.window_size and !:queue.is_empty(requests) do
+      
+      # Here one could check and apply configuration. Our implementation doesn't include this for now
+
       if !Enum.find(decisions, fn d -> match?({^slot_in, _}, d) end) do
         {{:value, c}, requests} = :queue.out(requests)
         proposals = MapSet.put(proposals, {slot_in, c})

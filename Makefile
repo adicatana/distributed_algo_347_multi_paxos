@@ -1,3 +1,4 @@
+# Panayiotis Panayiotou (pp3414) and Adrian Catana (ac7815)
 
 # distributed algorithms, n.dulay, 1 feb 18
 # coursework 2, paxos made moderately complex

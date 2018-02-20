@@ -22,6 +22,7 @@ defp next config, client_num, replicas, sent do
     amount   = Enum.random 1 .. config.max_amount
     transaction  = { :move, amount, account1, account2 }
 
+
     sent = sent + 1
     cmd = { self(), sent, transaction }
 

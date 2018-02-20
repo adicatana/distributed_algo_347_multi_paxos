@@ -6,21 +6,30 @@ defmodule Leader do
       {:bind, acceptors, replicas} ->
         ballot_num = {0, self()}
         spawn Scout, :start, [self(), acceptors, ballot_num]
-        next acceptors, replicas, ballot_num, false, MapSet.new, config
+        next acceptors, replicas, ballot_num, false, MapSet.new, config, nil
     end
   end
 
   # Main loop of Leader
-  defp next acceptors, replicas, ballot_num, active, proposals, config do
+  defp next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader do
     receive do
       {:propose, s, c} ->
         if !Enum.find(proposals, fn p -> match?({^s ,_}, p) end) do
           proposals = MapSet.put(proposals, {s, c})
           if active do
             spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}]
+          else
+            # monitoring_leader is the one that preempted this current leader
+            # even if the monitoring_leader is not active, we are using
+            # an "ancestor" reasoning, i.e. the monitoring_leader was
+            # eventually preempted by someone else, whom he will forward
+            # the message to
+            if monitoring_leader do
+              send monitoring_leader, {:propose, s, c}
+            end
           end
         end
-        next acceptors, replicas, ballot_num, active, proposals, config
+        next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader
 
       {:adopted, ^ballot_num, pvals} ->
         proposals = update(proposals, pvals)
@@ -28,7 +37,7 @@ defmodule Leader do
           spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}]
         end
         active = true
-        next acceptors, replicas, ballot_num, active, proposals, config
+        next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader
 
       {:preempted, {r, leader}} ->
         if config.debug_level == 1 do
@@ -39,7 +48,8 @@ defmodule Leader do
           ballot_num = {r + 1, self()}
           spawn Scout, :start, [self(), acceptors, ballot_num]
         end
-        next acceptors, replicas, ballot_num, active, proposals, config
+        monitoring_leader = leader
+        next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader
     end
   end
 
