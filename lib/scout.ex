@@ -24,8 +24,7 @@ defmodule Scout do
           pvalues = MapSet.union(pvalues, accepted_pvalues)
           waitfor = MapSet.delete(waitfor, a)
           if 2 * MapSet.size(waitfor) < length(acceptors) do
-            stripped_pvals = for {_, s, c} <- pvalues, do: {s, c}
-            send leader, {:adopted, b, stripped_pvals}
+            send leader, {:adopted, b, pvalues}
             exit(:normal)
           end
           next leader, acceptors, b, waitfor, pvalues
@@ -34,12 +33,6 @@ defmodule Scout do
           exit(:normal)
         end
     end
-  end
-
-  # Determines fthe {slot, command} corresponding
-  # to the maximum ballot number in pvals
-  defp pmax pvals do
-    MapSet.new(for {b, s, c} <- pvals, Enum.all?(pvals, fn {b_prime, ^s, _} -> b_prime <= b end), do: {b, s, c})
   end
 
 end

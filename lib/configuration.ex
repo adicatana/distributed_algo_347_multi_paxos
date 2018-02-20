@@ -33,7 +33,7 @@ end
 
 def version 4 do
   config = version 1
-  Map.put config, :acceptor_failures, 5 # Use 11 (2 * f + 1) servers to tolerate
+  Map.put config, :acceptor_failures, 2 # Use 11 (2 * f + 1) servers to tolerate
   # In the current setup each server has 1 acceptor
 end
 
