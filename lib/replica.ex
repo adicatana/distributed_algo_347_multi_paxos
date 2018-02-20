@@ -15,8 +15,8 @@ defmodule Replica do
       {:client_request, c} ->
         requests = :queue.in(c, requests)
         send monitor, { :client_request, config.server_num }
-      {:decision, s, c} -> 
-        # Decision made by th e Synod protocol, command c for slot s
+      {:decision, s, c} ->
+        # Decision made by the Synod protocol, command c for slot s
         decisions = MapSet.put(decisions, {s, c})
         {slot_out, requests, proposals} = while state, slot_in, slot_out, requests, proposals, decisions, leaders, config
     end
@@ -45,7 +45,7 @@ defmodule Replica do
       # handling of the state
       {client, cid, op} = command_1
       if !check_for_decision(MapSet.to_list(decisions), client, cid, op, slot_out) and !isreconfig op do
-        send state, {:execute, op}      
+        send state, {:execute, op}
         send client, {:reply, cid, :result}
       end
       # The loop trick: recurse until we have no more commands in decisions
@@ -61,7 +61,7 @@ defmodule Replica do
 
     # For a greater window size, we get to propose more commands for a slot
     if slot_in < slot_out + config.window_size and !:queue.is_empty(requests) do
-      
+
       # Here one could check and apply configuration. Our implementation doesn't include this for now
 
       if !Enum.find(decisions, fn d -> match?({^slot_in, _}, d) end) do
@@ -83,7 +83,7 @@ defmodule Replica do
     case decisions do
       [{s, {^client, ^cid, ^op}} | t] ->
         s < slot_out or check_for_decision t, client, cid, op, slot_out
-      [_ | t] -> check_for_decision t, client, cid, op, slot_out 
+      [_ | t] -> check_for_decision t, client, cid, op, slot_out
       [] -> false
     end
   end

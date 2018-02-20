@@ -33,27 +33,27 @@ end
 
 def version 4 do
   config = version 1
-  Map.put config, :acceptor_failures, 2 # Use 11 (2 * f + 1) servers to tolerate
+  Map.put config, :acceptor_failures, 4 # Use 11 (2 * f + 1) servers to tolerate
   # In the current setup each server has 1 acceptor
 end
 
 def version 5 do
   config = version 1
-  Map.put config, :leader_failures, 2 # Use 6 (f + 1) servers to tolerate
+  Map.put config, :leader_failures, 5 # Use 6 (f + 1) servers to tolerate
 end
 
 def version 6 do # pushing the failure tolerance testing to the boundary
   config = version 1
-  # Use 11 servers to tolerate
-  # Use 10 servers to observe failure
-  Map.put config, :leader_failures, 10 # need 11 servers to tolerate
-  Map.put config, :acceptor_failures, 5 # need 11 servers to tolerate
-  Map.put config, :replica_failures, 10 # need 11 servers to tolerate
+  # Use 7 servers to tolerate
+  # Use 6 servers to observe failure
+  Map.put config, :leader_failures, 6 # need 7 servers to tolerate
+  Map.put config, :acceptor_failures, 3 # need 7 servers to tolerate
+  Map.put config, :replica_failures, 6 # need 7 servers to tolerate
 end
 
 def version 7 do
   config = version 1
-  Map.put config, :acceptor_failures, 5 # Use 10 servers to observe failure
+  Map.put config, :acceptor_failures, 4 # Use 8 servers to observe failure
   # In the current setup each server has 1 acceptor
 end
 

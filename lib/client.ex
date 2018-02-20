@@ -22,10 +22,14 @@ defp next config, client_num, replicas, sent do
     amount   = Enum.random 1 .. config.max_amount
     transaction  = { :move, amount, account1, account2 }
 
-
     sent = sent + 1
     cmd = { self(), sent, transaction }
 
+    # This code broadcasts requests rather than using round robin
+    # To use this, comment out lines 34-35
+    #for r <- replicas do
+    #  send r, { :client_request, cmd }
+    #end
     # round robin which replicas to sent requests to
     replica = Enum.at replicas, rem(sent, length(replicas))
     send replica, { :client_request, cmd }
