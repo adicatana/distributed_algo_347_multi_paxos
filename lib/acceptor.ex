@@ -6,8 +6,7 @@ defmodule Acceptor do
     next {-1, -1}, MapSet.new
   end
 
-  # Acceptor runs in an infinite loop, receiving two 
-  # kinds of request messages from leaders
+  # Main loop for Acceptor 
   defp next ballot_num, accepted do
     receive do
       {:p1a, l, b} ->

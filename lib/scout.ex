@@ -1,16 +1,19 @@
 # Panayiotis Panayiotou (pp3414) and Adrian Catana (ac7815)
 defmodule Scout do
 
+  # A scout completes successfully when it has collected 
+  # ⟨p1b,acceptor,b,accepted_pvalues⟩ messages from all 
+  # acceptors in a majority, and returns an ⟨adopted,b,pvalues⟩ 
+  # message to its leader l.
   def start leader, acceptors, b do
     for a <- acceptors, do:
       send a, {:p1a, self(), b}
     next leader, acceptors, b, MapSet.new(acceptors), MapSet.new
   end
 
-  # A scout completes successfully when it has collected 
-  # ⟨p1b,acceptor,b,accepted_pvalues⟩ messages from all 
-  # acceptors in a majority, and returns an ⟨adopted,b,pvalues⟩ 
-  # message to its leader l.
+  # Main loop for Scout
+  # Waitfor was specifically converted to a set
+  # for faster removals  
   defp next leader, acceptors, b, waitfor, pvalues do
     receive do
       {:p1b, a, ballot_num, accepted_pvalues} ->
