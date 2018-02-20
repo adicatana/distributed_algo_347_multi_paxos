@@ -36,15 +36,10 @@ defmodule Scout do
     end
   end
 
-  defp find_max_ballot(pvals) do 
-    List.foldl(MapSet.to_list(pvals), {-1, -1}, fn {ballot_num, _, _}, acc -> if acc > ballot_num do acc else ballot_num end end)
-  end
-
   # Determines fthe {slot, command} corresponding 
   # to the maximum ballot number in pvals
   defp pmax pvals do
-    b = find_max_ballot pvals
-    MapSet.new(for {ballot_num, s, c} <- pvals, b == ballot_num, do: {ballot_num, s, c})
+    MapSet.new(for {b, s, c} <- pvals, Enum.all?(pvals, fn {b_prime, _, _} -> b_prime <= b end), do: {b, s, c})
   end
 
 end
