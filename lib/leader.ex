@@ -32,7 +32,7 @@ defmodule Leader do
         next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader
 
       {:adopted, ^ballot_num, pvals} ->
-        proposals = update(proposals, pvals)
+        proposals = update(proposals, pmax pvals)
         for {s, c} <- proposals do
           spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}]
         end
@@ -51,6 +51,10 @@ defmodule Leader do
         monitoring_leader = leader
         next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader
     end
+  end
+
+  defp pmax pvals do
+    MapSet.new(for {b, s, c} <- pvals, Enum.all?(pvals, fn {b_prime, _, _} -> b_prime <= b end), do: {b, s, c})
   end
 
   # The update function applies to two sets of proposals. 
