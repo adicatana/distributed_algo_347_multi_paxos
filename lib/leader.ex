@@ -18,15 +18,16 @@ defmodule Leader do
           proposals = MapSet.put(proposals, {s, c})
           if active do
             spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}, monitor, config]
-          else
-            # monitoring_leader is the one that preempted this current leader
-            # even if the monitoring_leader is not active, we are using
-            # an "ancestor" reasoning, i.e. the monitoring_leader was
-            # eventually preempted by someone else, whom he will forward
-            # the message to
-            if monitoring_leader do
-              send monitoring_leader, {:propose, s, c}
-            end
+          # monitoring_leader is the one that preempted this current leader
+          # even if the monitoring_leader is not active, we are using
+          # an "ancestor" reasoning, i.e. the monitoring_leader was
+          # eventually preempted by someone else, whom he will forward
+          # the message to
+          # Uncomment the code below for collocation
+          #else
+          #  if monitoring_leader do
+          #    send monitoring_leader, {:propose, s, c}
+          #  end
           end
         end
         next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader, monitor
@@ -51,7 +52,8 @@ defmodule Leader do
           Process.sleep(:rand.uniform(1000))
           spawn Scout, :start, [self(), acceptors, ballot_num, monitor, config]
         end
-        monitoring_leader = leader
+        # For collocation we need to store the leader who preempted this one
+        # monitoring_leader = leader
         next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader, monitor
     end
   end
