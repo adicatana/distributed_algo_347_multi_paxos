@@ -1,43 +1,44 @@
 # Panayiotis Panayiotou (pp3414) and Adrian Catana (ac7815)
 defmodule Leader do
 
-  def start config do
+  def start config, monitor do
     receive do
       {:bind, acceptors, replicas} ->
         ballot_num = {0, self()}
-        spawn Scout, :start, [self(), acceptors, ballot_num]
-        next acceptors, replicas, ballot_num, false, MapSet.new, config, nil
+        spawn Scout, :start, [self(), acceptors, ballot_num, monitor, config]
+        next acceptors, replicas, ballot_num, false, MapSet.new, config, nil, monitor
     end
   end
 
   # Main loop of Leader
-  defp next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader do
+  defp next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader, monitor do
     receive do
       {:propose, s, c} ->
         if !Enum.find(proposals, fn p -> match?({^s ,_}, p) end) do
           proposals = MapSet.put(proposals, {s, c})
           if active do
-            spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}]
-          else
-            # monitoring_leader is the one that preempted this current leader
-            # even if the monitoring_leader is not active, we are using
-            # an "ancestor" reasoning, i.e. the monitoring_leader was
-            # eventually preempted by someone else, whom he will forward
-            # the message to
-            if monitoring_leader do
-              send monitoring_leader, {:propose, s, c}
-            end
+            spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}, monitor, config]
+          # monitoring_leader is the one that preempted this current leader
+          # even if the monitoring_leader is not active, we are using
+          # an "ancestor" reasoning, i.e. the monitoring_leader was
+          # eventually preempted by someone else, whom he will forward
+          # the message to
+          # Uncomment the code below for collocation
+          #else
+          #  if monitoring_leader do
+          #    send monitoring_leader, {:propose, s, c}
+          #  end
           end
         end
-        next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader
+        next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader, monitor
 
       {:adopted, ^ballot_num, pvals} ->
         proposals = update(proposals, pmax pvals)
         for {s, c} <- proposals do
-          spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}]
+          spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}, monitor, config]
         end
         active = true
-        next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader
+        next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader, monitor
 
       {:preempted, {r, leader}} ->
         if config.debug_level == 1 do
@@ -49,10 +50,11 @@ defmodule Leader do
           # Ping Pong if you spawn the scout immediately
           # Thus, introduce a bit of asymmetry to resolve the livelock
           Process.sleep(:rand.uniform(1000))
-          spawn Scout, :start, [self(), acceptors, ballot_num]
+          spawn Scout, :start, [self(), acceptors, ballot_num, monitor, config]
         end
-        monitoring_leader = leader
-        next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader
+        # For collocation we need to store the leader who preempted this one
+        # monitoring_leader = leader
+        next acceptors, replicas, ballot_num, active, proposals, config, monitoring_leader, monitor
     end
   end
 

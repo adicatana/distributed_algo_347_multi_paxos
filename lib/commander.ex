@@ -4,7 +4,8 @@ defmodule Commander do
   # Commander sends a ⟨p2a,leader,⟨b,s,c⟩⟩ message to all 
   # acceptors, and waits for responses of the form 
   # ⟨p2b,acceptor,ballot_num⟩.
-  def start leader, acceptors, replicas, {b, s, c} do
+  def start leader, acceptors, replicas, {b, s, c}, monitor, config do
+    send monitor, {:commander, config.server_num}
     for a <- acceptors, do: 
       send a, {:p2a, self(), {b, s, c}}
     next leader, acceptors, replicas, {b, s, c}, MapSet.new(acceptors)
