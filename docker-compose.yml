@@ -24,11 +24,15 @@ services:
     container_name: paxos
     command: > 
       elixir --name paxos@paxos.localdomain --cookie pass 
-             -S mix run --no-halt -e Paxos.main 1 docker 3 2 
+             -S mix run --no-halt -e Paxos.main 4 docker 7 2 
     depends_on:
       - server1.localdomain
       - server2.localdomain
       - server3.localdomain
+      - server4.localdomain
+      - server5.localdomain
+      - server6.localdomain
+      - server7.localdomain
       - client1.localdomain
       - client2.localdomain
     <<: *defaults
@@ -51,6 +55,34 @@ services:
     container_name: server3
     command: > 
       elixir --name server3@server3.localdomain --cookie pass 
+             -S mix run --no-halt 
+    <<: *defaults
+
+  server4.localdomain:
+    container_name: server4
+    command: > 
+      elixir --name server4@server4.localdomain --cookie pass 
+             -S mix run --no-halt 
+    <<: *defaults
+
+  server5.localdomain:
+    container_name: server5
+    command: > 
+      elixir --name server5@server5.localdomain --cookie pass 
+             -S mix run --no-halt 
+    <<: *defaults
+
+  server6.localdomain:
+    container_name: server6
+    command: > 
+      elixir --name server6@server6.localdomain --cookie pass 
+             -S mix run --no-halt 
+    <<: *defaults
+
+  server7.localdomain:
+    container_name: server7
+    command: > 
+      elixir --name server7@server7.localdomain --cookie pass 
              -S mix run --no-halt 
     <<: *defaults
 
