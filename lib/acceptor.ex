@@ -3,7 +3,7 @@ defmodule Acceptor do
 
   def start config do
     # Define falsity ballot number as {-1, -1}
-    next {-1, -1}, Map.new
+    next {-1, -1}, MapSet.new
   end
 
   # Main loop for Acceptor 
@@ -16,13 +16,13 @@ defmodule Acceptor do
           else
             ballot_num
           end
-        send l, {:p1b, self(), ballot_num, MapSet.new(Map.values(accepted))}
+        send l, {:p1b, self(), ballot_num, accepted}
         next ballot_num, accepted
 
       {:p2a, l, {b, s, c}} ->
         accepted = 
           if ballot_num == b do
-            Map.put(accepted, s, {b, s, c})
+            MapSet.put(accepted, {b, s, c})
           else
             accepted
           end
