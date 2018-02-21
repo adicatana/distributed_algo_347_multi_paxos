@@ -5,7 +5,8 @@ defmodule Scout do
   # ⟨p1b,acceptor,b,accepted_pvalues⟩ messages from all
   # acceptors in a majority, and returns an ⟨adopted,b,pvalues⟩
   # message to its leader l.
-  def start leader, acceptors, b do
+  def start leader, acceptors, b, monitor, config do
+    send monitor, {:scout, config.server_num}
     for a <- acceptors, do:
       send a, {:p1a, self(), b}
     next leader, acceptors, b, MapSet.new(acceptors), MapSet.new

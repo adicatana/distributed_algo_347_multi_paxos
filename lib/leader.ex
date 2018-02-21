@@ -1,34 +1,34 @@
 # Panayiotis Panayiotou (pp3414) and Adrian Catana (ac7815)
 defmodule Leader do
 
-  def start config do
+  def start config, monitor do
     receive do
       {:bind, acceptors, replicas} ->
         ballot_num = {0, self()}
-        spawn Scout, :start, [self(), acceptors, ballot_num]
-        next acceptors, replicas, ballot_num, false, MapSet.new, config
+        spawn Scout, :start, [self(), acceptors, ballot_num, monitor, config]
+        next acceptors, replicas, ballot_num, false, MapSet.new, config, monitor
     end
   end
 
   # Main loop of Leader
-  defp next acceptors, replicas, ballot_num, active, proposals, config do
+  defp next acceptors, replicas, ballot_num, active, proposals, config, monitor do
     receive do
       {:propose, s, c} ->
         if !Enum.find(proposals, fn p -> match?({^s ,_}, p) end) do
           proposals = MapSet.put(proposals, {s, c})
           if active do
-            spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}]
+            spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}, monitor, config]
           end
         end
-        next acceptors, replicas, ballot_num, active, proposals, config
+        next acceptors, replicas, ballot_num, active, proposals, config, monitor
 
       {:adopted, ^ballot_num, pvals} ->
         proposals = update(proposals, pmax pvals)
         for {s, c} <- proposals do
-          spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}]
+          spawn Commander, :start, [self(), acceptors, replicas, {ballot_num, s, c}, monitor, config]
         end
         active = true
-        next acceptors, replicas, ballot_num, active, proposals, config
+        next acceptors, replicas, ballot_num, active, proposals, config, monitor
 
       {:preempted, {r, leader}} ->
         if config.debug_level == 1 do
@@ -40,10 +40,10 @@ defmodule Leader do
           # Ping Pong if you spawn the scout immediately
           # Thus, introduce a bit of asymmetry to resolve the livelock
           # Process.sleep(:rand.uniform(1000))
-          spawn Scout, :start, [self(), acceptors, ballot_num]
+          spawn Scout, :start, [self(), acceptors, ballot_num, monitor, config]
         end
         monitoring_leader = leader
-        next acceptors, replicas, ballot_num, active, proposals, config
+        next acceptors, replicas, ballot_num, active, proposals, config, monitor
     end
   end
 

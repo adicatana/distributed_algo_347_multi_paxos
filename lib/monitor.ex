@@ -3,11 +3,22 @@ defmodule Monitor do
 
 def start config do
   Process.send_after self(), :print, config.print_after
-  next config, 0, Map.new, Map.new, Map.new
+  next config, 0, Map.new, Map.new, Map.new, Map.new, Map.new
 end # start
 
-defp next config, clock, requests, updates, transactions do
+defp next config, clock, requests, updates, transactions, commanders, scouts do
   receive do
+
+  { :commander, server_num } ->
+    seen = Map.get commanders, server_num, 0
+    commanders = Map.put commanders, server_num, seen + 1
+    next config, clock, requests, updates, transactions, commanders, scouts
+
+  { :scout, server_num } ->
+    seen = Map.get scouts, server_num, 0
+    scouts = Map.put scouts, server_num, seen + 1
+    next config, clock, requests, updates, transactions, commanders, scouts
+
   { :db_update, db, seqnum, transaction } ->
     { :move, amount, from, to } = transaction
 
@@ -34,12 +45,12 @@ defp next config, clock, requests, updates, transactions do
       end # case
 
     updates = Map.put updates, db, seqnum
-    next config, clock, requests, updates, transactions
+    next config, clock, requests, updates, transactions, commanders, scouts
 
   { :client_request, server_num } ->  # requests by replica
     seen = Map.get requests, server_num, 0
     requests = Map.put requests, server_num, seen + 1
-    next config, clock, requests, updates, transactions
+    next config, clock, requests, updates, transactions, commanders, scouts
 
   :print ->
     clock = clock + config.print_after
@@ -47,9 +58,14 @@ defp next config, clock, requests, updates, transactions do
     IO.puts "time = #{clock}  updates done = #{inspect sorted}"
     sorted = requests |> Map.to_list |> List.keysort(0)
     IO.puts "time = #{clock} requests seen = #{inspect sorted}"
+    sorted = commanders |> Map.to_list |> List.keysort(0)
+    IO.puts "time = #{clock} commanders seen = #{inspect sorted}"
+    sorted = scouts |> Map.to_list |> List.keysort(0)    
+    IO.puts "time = #{clock} scouts seen = #{inspect sorted}"
+
     IO.puts ""
     Process.send_after self(), :print, config.print_after
-    next config, clock, requests, updates, transactions
+    next config, clock, requests, updates, transactions, commanders, scouts
 
   # ** ADD ADDITIONAL MESSAGES HERE
 
