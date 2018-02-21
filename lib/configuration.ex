@@ -48,7 +48,7 @@ def version 6 do # pushing the failure tolerance testing to the boundary
   # Use 6 servers to observe failure
   Map.put config, :leader_failures, 6 # need 7 servers to tolerate
   Map.put config, :acceptor_failures, 3 # need 7 servers to tolerate
-  Map.put config, :replica_failures, 6 # need 7 servers to tolerate
+  Map.put config, :replica_failures, 4
 end
 
 def version 7 do

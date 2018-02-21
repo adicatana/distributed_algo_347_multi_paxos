@@ -27,12 +27,12 @@ defp next config, client_num, replicas, sent do
 
     # This code broadcasts requests rather than using round robin
     # To use this, comment out lines 34-35
-    #for r <- replicas do
-    #  send r, { :client_request, cmd }
-    #end
+    for r <- replicas do
+      send r, { :client_request, cmd }
+    end
     # round robin which replicas to sent requests to
-    replica = Enum.at replicas, rem(sent, length(replicas))
-    send replica, { :client_request, cmd }
+    #replica = Enum.at replicas, rem(sent, length(replicas))
+    #send replica, { :client_request, cmd }
 
     if sent == config.max_requests, do: send self(), :client_stop
 
