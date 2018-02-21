@@ -1,0 +1,23 @@
+mix run --no-halt -e Paxos.main 1 single 3 2 
+          Starting server 172.18.0.1
+          Starting server 172.18.0.1
+          Starting server 172.18.0.1
+[#PID<0.104.0>, #PID<0.109.0>, #PID<0.114.0>]
+          Starting client 172.18.0.1
+          Starting client 172.18.0.1
+time = 1000  updates done = [{1, 158}, {2, 171}, {3, 49}]
+time = 1000 requests seen = [{1, 83}, {2, 89}, {3, 44}]
+
+time = 2000  updates done = [{1, 367}, {2, 366}, {3, 157}]
+time = 2000 requests seen = [{1, 182}, {2, 183}, {3, 85}]
+
+time = 3000  updates done = [{1, 552}, {2, 552}, {3, 283}]
+time = 3000 requests seen = [{1, 275}, {2, 276}, {3, 143}]
+
+Client 1 going to sleep, sent = 500
+Client 2 going to sleep, sent = 500
+time = 4000  updates done = [{1, 702}, {2, 708}, {3, 707}]
+time = 4000 requests seen = [{1, 332}, {2, 334}, {3, 334}]
+
+time = 5000  updates done = [{1, 1000}, {2, 1000}, {3, 1000}]
+time = 5000 requests seen = [{1, 332}, {2, 334}, {3, 334}]
